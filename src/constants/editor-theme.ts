@@ -1,0 +1,40 @@
+import { createTheme } from "@uiw/codemirror-themes";
+import { tags as t } from "@lezer/highlight";
+
+export const wasmarkTheme = createTheme({
+  theme: "dark",
+  settings: {
+    background: "#0c0c1e",
+    foreground: "#e2e8f0",
+    caret: "#4dabf7",
+    selection: "rgba(77, 171, 247, 0.2)",
+    selectionMatch: "rgba(77, 171, 247, 0.1)",
+    lineHighlight: "rgba(77, 171, 247, 0.05)",
+    gutterBackground: "#0c0c1e",
+    gutterForeground: "#64748b",
+    gutterBorder: "transparent",
+  },
+  styles: [
+    { tag: t.heading1, color: "#4dabf7", fontWeight: "700", fontSize: "1.4em" },
+    { tag: t.heading2, color: "#4dabf7", fontWeight: "600", fontSize: "1.2em" },
+    { tag: t.heading3, color: "#4dabf7", fontWeight: "600", fontSize: "1.1em" },
+    { tag: [t.heading4, t.heading5, t.heading6], color: "#4dabf7", fontWeight: "600" },
+    { tag: t.strong, color: "#e2e8f0", fontWeight: "700" },
+    { tag: t.emphasis, color: "#e2e8f0", fontStyle: "italic" },
+    { tag: t.strikethrough, textDecoration: "line-through", color: "#64748b" },
+    { tag: t.link, color: "#4dabf7", textDecoration: "underline" },
+    { tag: t.url, color: "#4dabf7" },
+    { tag: [t.monospace, t.processingInstruction], color: "#34d399", fontFamily: "var(--font-mono)" },
+    { tag: t.quote, color: "#94a3b8", fontStyle: "italic" },
+    { tag: t.meta, color: "#64748b" },
+    { tag: t.comment, color: "#64748b" },
+    { tag: t.keyword, color: "#c084fc" },
+    { tag: t.string, color: "#34d399" },
+    { tag: t.number, color: "#fbbf24" },
+    { tag: t.bool, color: "#f87171" },
+    { tag: t.null, color: "#f87171" },
+    { tag: t.operator, color: "#94a3b8" },
+    { tag: t.punctuation, color: "#64748b" },
+    { tag: t.contentSeparator, color: "#1e1e4a" },
+  ],
+});
