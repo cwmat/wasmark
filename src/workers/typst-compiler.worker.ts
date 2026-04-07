@@ -15,8 +15,10 @@ async function initTypst() {
 
   try {
     const { $typst } = await import("@myriaddreamin/typst.ts/contrib/snippet");
+    const { preloadFontAssets } = await import("@myriaddreamin/typst.ts/options.init");
     $typst.setCompilerInitOptions({
       getModule: () => wasmUrl,
+      beforeBuild: [preloadFontAssets({ assets: ["text", "cjk", "emoji"] })],
     });
     typstInstance = $typst;
     post({ type: "INIT_COMPLETE" });
