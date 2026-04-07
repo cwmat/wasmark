@@ -17,6 +17,7 @@
   "dependencies": {
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/language-data": "^6.5.0",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
     "@myriaddreamin/typst.ts": "^0.7.0-rc2",
     "@uiw/codemirror-themes": "^4.25.8",
     "@uiw/react-codemirror": "^4.23.0",

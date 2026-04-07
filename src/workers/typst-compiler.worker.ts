@@ -1,4 +1,5 @@
 import type { TypstWorkerInbound, TypstWorkerOutbound } from "@/types/worker-messages";
+import wasmUrl from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url";
 
 function post(msg: TypstWorkerOutbound) {
   self.postMessage(msg);
@@ -7,28 +8,21 @@ function post(msg: TypstWorkerOutbound) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let typstInstance: any = null;
 
-/** Runtime-only dynamic import that Vite/Rollup won't try to resolve at build time */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function runtimeImport(specifier: string): Promise<any> {
-  return new Function("s", "return import(s)")(specifier);
-}
-
 async function initTypst() {
   if (typstInstance) return typstInstance;
 
   post({ type: "COMPILE_PROGRESS", payload: { stage: "Loading WASM compiler..." } });
 
   try {
-    // Dynamic import at runtime only - typst.ts must be installed for PDF export
-    const mod = await runtimeImport("@myriaddreamin/typst.ts/dist/esm/contrib/snippet.mjs");
-    const $typst = mod.$typst || mod.default;
-    if ($typst) {
-      typstInstance = $typst;
-      post({ type: "INIT_COMPLETE" });
-      return $typst;
-    }
-    throw new Error("Could not find $typst export");
+    const { $typst } = await import("@myriaddreamin/typst.ts/contrib/snippet");
+    $typst.setCompilerInitOptions({
+      getModule: () => wasmUrl,
+    });
+    typstInstance = $typst;
+    post({ type: "INIT_COMPLETE" });
+    return $typst;
   } catch (err) {
+    console.error("[Typst Worker] Init failed:", err);
     post({
       type: "COMPILE_ERROR",
       payload: {
@@ -52,9 +46,18 @@ async function compilePdf(typstSource: string) {
       payload: { pdfBytes: buffer },
     });
   } catch (err) {
+    console.error("[Typst Worker] Compile failed:", err);
+    let message: string;
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (typeof err === "string") {
+      message = err;
+    } else {
+      message = String(err);
+    }
     post({
       type: "COMPILE_ERROR",
-      payload: { message: (err as Error).message },
+      payload: { message },
     });
   }
 }

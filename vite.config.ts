@@ -25,7 +25,7 @@ export default defineConfig({
     target: "esnext",
   },
   optimizeDeps: {
-    exclude: [],
+    exclude: ["@myriaddreamin/typst-ts-web-compiler"],
   },
   server: {
     headers: {

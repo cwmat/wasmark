@@ -22,7 +22,7 @@ export function buildTypstPreamble(settings: ExportSettings): string {
     : "";
 
   const footerPart = settings.footerText
-    ? `,\n  footer: align(center)[${convertFooterTemplate(settings.footerText)}]`
+    ? `,\n  footer: context align(center)[${convertFooterTemplate(settings.footerText)}]`
     : "";
 
   lines.push(

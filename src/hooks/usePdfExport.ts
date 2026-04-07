@@ -46,6 +46,7 @@ export function usePdfExport() {
           break;
         }
         case "COMPILE_ERROR":
+          console.error("[PDF Export]", msg.payload.message);
           setError(msg.payload.message);
           setStatus("error");
           setTimeout(() => setStatus("idle"), 3000);
@@ -53,8 +54,19 @@ export function usePdfExport() {
           break;
       }
     };
+    const errorHandler = (e: ErrorEvent) => {
+      console.error("[PDF Export] Worker error:", e.message);
+      setError(e.message || "Worker crashed unexpectedly");
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+      resolveRef.current?.();
+    };
     w.addEventListener("message", handler);
-    return () => w.removeEventListener("message", handler);
+    w.addEventListener("error", errorHandler);
+    return () => {
+      w.removeEventListener("message", handler);
+      w.removeEventListener("error", errorHandler);
+    };
   }, [setStatus, setError]);
 
   const exportPdf = useCallback(() => {

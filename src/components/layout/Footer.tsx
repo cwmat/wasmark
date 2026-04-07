@@ -54,7 +54,9 @@ export function Footer() {
         {exportStatus === "error" && errorMessage && (
           <>
             <span className="text-text-muted/50">|</span>
-            <span className="text-status-error">Export failed</span>
+            <span className="text-status-error" title={errorMessage}>
+              Export failed: {errorMessage}
+            </span>
           </>
         )}
       </div>
