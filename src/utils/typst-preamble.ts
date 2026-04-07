@@ -40,6 +40,9 @@ export function buildTypstPreamble(settings: ExportSettings): string {
   // Paragraph spacing
   lines.push(`#set par(justify: true)`);
 
+  // Style links as blue underlined text
+  lines.push(`#show link: it => underline(text(fill: rgb("#4dabf7"), it))`);
+
   return lines.join("\n") + "\n\n";
 }
 
