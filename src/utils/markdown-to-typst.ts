@@ -111,44 +111,57 @@ function basicMarkdownToTypst(md: string): string {
 }
 
 /** Escape characters that have special meaning in Typst */
-function escapeTypstText(text: string): string {
+function escapeTypst(text: string): string {
   return text.replace(/[#@$\\<>\[\]{}]/g, (ch) => `\\${ch}`);
 }
 
+/**
+ * Convert markdown inline formatting to Typst.
+ * Uses a regex tokenizer to split into: code spans, images, links, bold,
+ * italic, strikethrough, and plain text. Only plain text gets escaped.
+ */
 function convertInline(text: string): string {
-  // Process inline code first to protect its contents
-  const codeSegments: string[] = [];
-  const withCodePlaceholders = text.replace(/`([^`]+)`/g, (_, code) => {
-    codeSegments.push(`\`${code}\``);
-    return `\x00CODE${codeSegments.length - 1}\x00`;
-  });
+  // Regex that matches markdown inline constructs in priority order
+  const tokenPattern =
+    /`([^`]+)`|!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\*\*(.+?)\*\*|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|~~(.+?)~~/g;
 
-  let result = withCodePlaceholders
-    // Images (before links since they share similar syntax)
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, _alt, url) => `#image("${url}")`)
-    // Links
-    .replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      (_, label, url) => `#link("${url}")[${escapeTypstText(label)}]`,
-    )
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, "*$1*")
-    // Italic (must come after bold)
-    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "_$1_")
-    // Strikethrough
-    .replace(/~~(.+?)~~/g, "#strike[$1]");
+  let result = "";
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
-  // Escape special Typst characters in remaining plain text
-  // Split on Typst function calls (#func[...]) and markup (*bold*, _italic_) to avoid escaping those
-  result = result.replace(
-    /(#\w+(?:\([^)]*\))?(?:\[[^\]]*\])?|\*[^*]+\*|_[^_]+_|`[^`]+`|\x00CODE\d+\x00)/g,
-    (match) => `\x00KEEP${match}\x00KEEP`,
-  );
-  const parts = result.split("\x00KEEP");
-  result = parts.map((part) => (part.startsWith("") ? part : escapeTypstText(part))).join("");
+  while ((match = tokenPattern.exec(text)) !== null) {
+    // Escape plain text before this match
+    if (match.index > lastIndex) {
+      result += escapeTypst(text.slice(lastIndex, match.index));
+    }
 
-  // Restore code segments
-  result = result.replace(/\x00CODE(\d+)\x00/g, (_, i) => codeSegments[parseInt(i)]!);
+    if (match[1] !== undefined) {
+      // Inline code: `code`
+      result += `\`${match[1]}\``;
+    } else if (match[3] !== undefined) {
+      // Image: ![alt](url)
+      result += `#image("${match[3]}")`;
+    } else if (match[4] !== undefined && match[5] !== undefined) {
+      // Link: [label](url)
+      result += `#link("${match[5]}")[${escapeTypst(match[4])}]`;
+    } else if (match[6] !== undefined) {
+      // Bold: **text**
+      result += `*${convertInline(match[6])}*`;
+    } else if (match[7] !== undefined) {
+      // Italic: *text*
+      result += `_${convertInline(match[7])}_`;
+    } else if (match[8] !== undefined) {
+      // Strikethrough: ~~text~~
+      result += `#strike[${convertInline(match[8])}]`;
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Escape remaining plain text after last match
+  if (lastIndex < text.length) {
+    result += escapeTypst(text.slice(lastIndex));
+  }
 
   return result;
 }
