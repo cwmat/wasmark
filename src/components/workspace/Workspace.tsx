@@ -64,7 +64,7 @@ export function Workspace() {
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
-        setPendingFile({ name: file.name, content: reader.result });
+        setPendingFile({ name: file.name, content: reader.result.replace(/\r\n?/g, "\n") });
       }
     };
     reader.readAsText(file);
