@@ -4,9 +4,7 @@ import { buildTypstPreamble } from "./typst-preamble";
 export function markdownToTypst(markdown: string, settings: ExportSettings): string {
   const preamble = buildTypstPreamble(settings);
   const body = basicMarkdownToTypst(markdown);
-  const source = preamble + body;
-  console.log("[markdownToTypst] Generated Typst source:\n", source);
-  return source;
+  return preamble + body;
 }
 
 /**
